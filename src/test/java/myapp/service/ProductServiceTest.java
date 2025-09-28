@@ -2,6 +2,7 @@ package myapp.service;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.DisplayName;
 
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
@@ -72,47 +73,25 @@ public class ProductServiceTest {
         return product;
     }
 
-    // BEGIN TEST CASES - (with example for Titile)
-    @Test
-    public void testTitleEquivalencePartitionTitle() {
-        //Valid case Title == 3 char
-        Product productWithValidTitle = createProductSample(
-            1L,
-            "NES",
-            null,
-            null,
-            1,
-            1,
-            null,
-            BigDecimal.TEN,
-            ProductStatus.IN_STOCK,
-            null,
-            Instant.now()
-        );
-        Set<ConstraintViolation<Product>> violations_valid = validator.validate(productWithValidTitle);
-        // Assert
-        System.err.println(violations_valid);
-        assertTrue(violations_valid.isEmpty());
-        when(productRepository.save(productWithValidTitle)).thenReturn(productWithValidTitle);
-        Product savedProduct = productService.save(productWithValidTitle);
-        assertEquals(productWithValidTitle, savedProduct);
+    // BEGIN TEST CASES 
+    @Test 
+    @DisplayName("Teste do Robô: Deve rejeitar um produto com preço de R$0,99")
+    void meuTesteParaPrecoInvalido() {
 
-        //Invalid case Title < 3 char
-        Product productWithTwoCharTitle = createProductSample(
-            1L,
-            "NE",
-            null,
-            null,
-            1,
-            1,
-            null,
-            BigDecimal.TEN,
-            ProductStatus.IN_STOCK,
-            null,
-            Instant.now()
-        );
-        Set<ConstraintViolation<Product>> violations_invalid = validator.validate(productWithTwoCharTitle);
-        // Assert
-        assertEquals("title", violations_invalid.iterator().next().getPropertyPath().toString());
+    // PASSO 1: O robô cria um produto de mentira.
+    Product produtoRuim = new Product();
+    
+    // PASSO 2: Ele coloca um preço que, que é PROIBIDO.
+    produtoRuim.setTitle("Produto com Preço Ruim");
+    produtoRuim.setPrice(0.99); 
+    
+    // Colocamos o resto dos dados como válidos.
+    produtoRuim.setStockQuantity(10);
+    produtoRuim.setStatus("IN_STOCK");
+
+    // PASSO 3: O robô manda a máquina que é o nosso (productService) tentar salvar o produto ruim e retornar
+    assertThrows(InvalidProductException.class, () -> {
+        productService.save(produtoRuim);
+    });
     }
 }
